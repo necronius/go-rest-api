@@ -4,16 +4,25 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/necronius/go-rest-api/internal/comment"
+	"github.com/necronius/go-rest-api/internal/database"
 	transportHTTP "github.com/necronius/go-rest-api/internal/transport/http"
 )
 
 type App struct{}
 
-// Run - sets up our application
 func (app *App) Run() error {
-	fmt.Println("Setting Up Our APP")
+	fmt.Println("Settin Up our APP")
 
-	handler := transportHTTP.NewHandler()
+	var err error
+	db, err := database.NewDatabase()
+	if err != nil {
+		return err
+	}
+
+	commentService := comment.NewService(db)
+
+	handler := transportHTTP.NewHandler(commentService)
 	handler.SetupRoutes()
 
 	if err := http.ListenAndServe(":8080", handler.Router); err != nil {
@@ -25,7 +34,7 @@ func (app *App) Run() error {
 }
 
 func main() {
-	fmt.Println("Go REST API Course")
+	fmt.Println("Go REST api")
 	app := App{}
 	if err := app.Run(); err != nil {
 		fmt.Println("Error starting up our REST API")
